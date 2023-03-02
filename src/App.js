@@ -1,5 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { AiOutlinePlus } from "react-icons/ai";
+
+import { db } from "./firebase";
+import { collection, onSnapshot, query } from "firebase/firestore";
+
 import Todo from "./Todo";
 
 const style = {
@@ -13,7 +17,29 @@ const style = {
 };
 
 function App() {
-  const [todos, setTodos] = useState(["Learn React", "Grind Leetcode"]);
+  const [todos, setTodos] = useState([]);
+
+  // Create todo in Firestore
+
+  // Read all todos from Firestore - get multiple documents from a collection
+  useEffect(() => {
+    const q = query(collection(db, "todos"));
+
+    // onSnapshot() method for realtime updates
+    // https://firebase.google.com/docs/firestore/query-data/listen
+    const unsubscribe = onSnapshot(q, (querySnapshot) => {
+      let todosArray = [];
+      querySnapshot.forEach((doc) => {
+        todosArray.push({ ...doc.data(), id: doc.id });
+      });
+      setTodos(todosArray);
+      return unsubscribe();
+    });
+  }, []);
+
+  // Update todo in Firestore
+
+  // Delete todo in Firestore
 
   return (
     <div className={style.bg}>
