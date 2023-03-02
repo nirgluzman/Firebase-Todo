@@ -7,6 +7,7 @@ import {
   onSnapshot,
   query,
   doc,
+  addDoc,
   updateDoc,
 } from "firebase/firestore";
 
@@ -24,8 +25,22 @@ const style = {
 
 function App() {
   const [todos, setTodos] = useState([]);
+  const [input, setInput] = useState("");
 
   // Create todo in Firestore
+  const createTodo = async (e) => {
+    e.preventDefault(); // prevents browser reload/refresh
+    if (input === "") {
+      alert("Please enter a valid todo !");
+      return;
+    }
+    // Add a new document
+    await addDoc(collection(db, "todos"), {
+      text: input,
+      completed: false,
+    });
+    setInput(""); // clear the input field once we add a new todo
+  };
 
   // Read all todos from Firestore - get multiple documents from a collection
   useEffect(() => {
@@ -56,8 +71,14 @@ function App() {
     <div className={style.bg}>
       <div className={style.container}>
         <h3 className={style.heading}>Todo App</h3>
-        <form className={style.form}>
-          <input className={style.input} type="text" placeholder="add Todo" />
+        <form onSubmit={createTodo} className={style.form}>
+          <input
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            className={style.input}
+            type="text"
+            placeholder="Add Todo"
+          />
           <button className={style.button}>
             <AiOutlinePlus size={30} />
           </button>
