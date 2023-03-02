@@ -2,7 +2,13 @@ import { useState, useEffect } from "react";
 import { AiOutlinePlus } from "react-icons/ai";
 
 import { db } from "./firebase";
-import { collection, onSnapshot, query } from "firebase/firestore";
+import {
+  collection,
+  onSnapshot,
+  query,
+  doc,
+  updateDoc,
+} from "firebase/firestore";
 
 import Todo from "./Todo";
 
@@ -23,7 +29,7 @@ function App() {
 
   // Read all todos from Firestore - get multiple documents from a collection
   useEffect(() => {
-    const q = query(collection(db, "todos"));
+    const q = query(collection(db, "todos")); // Create a query against the collection.
 
     // onSnapshot() method for realtime updates
     // https://firebase.google.com/docs/firestore/query-data/listen
@@ -33,11 +39,16 @@ function App() {
         todosArray.push({ ...doc.data(), id: doc.id });
       });
       setTodos(todosArray);
-      return unsubscribe();
+      return () => unsubscribe();
     });
   }, []);
 
-  // Update todo in Firestore
+  // Update todo in Firestore - toggle the Complete checkbox
+  const toggleComplete = async (todo) => {
+    await updateDoc(doc(db, "todos", todo.id), {
+      completed: !todo.completed,
+    });
+  };
 
   // Delete todo in Firestore
 
@@ -53,7 +64,7 @@ function App() {
         </form>
         <ul>
           {todos.map((todo, index) => (
-            <Todo key={index} todo={todo} />
+            <Todo key={index} todo={todo} toggleComplete={toggleComplete} />
           ))}
         </ul>
         <p className={style.count}>You have 2 todos</p>
